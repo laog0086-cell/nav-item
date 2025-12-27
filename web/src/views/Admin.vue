@@ -42,6 +42,7 @@
         <li :class="{active: page==='ad'}" @click="page='ad'; closeSider()">广告管理</li>
         <li :class="{active: page==='friend'}" @click="page='friend'; closeSider()">友链管理</li>
         <li :class="{active: page==='user'}" @click="page='user'; closeSider()">用户管理</li>
+        <li :class="{active: page==='background'}" @click="page='background'; closeSider()">背景设置</li>
       </ul>
     </aside>
     <main class="admin-main">
@@ -77,6 +78,16 @@
             </div>
           </div>
         </div>
+
+        <div v-if="page==='background'" class="bg-setting-page" style="width: 100%; max-width: 600px; padding: 20px;">
+          <div class="welcome-card" style="width: 100%; align-items: stretch;">
+            <h3 style="margin-top:0; color:#222;">主页背景设置</h3>
+            <p style="font-size: 14px; color: #666; margin-bottom: 20px;">请输入背景图片的链接地址（支持 URL）</p>
+            <input v-model="bgUrl" type="text" placeholder="https://example.com/background.jpg" class="login-input" style="width: 100%; margin-bottom: 20px;" />
+            <button @click="saveBackground" class="login-btn" style="flex: none;">保存背景</button>
+          </div>
+        </div>
+
         <MenuManage v-if="page==='menu'" />
         <CardManage v-if="page==='card'" />
         <AdManage v-if="page==='ad'" />
@@ -109,6 +120,7 @@ const loading = ref(false);
 const loginError = ref('');
 const showPassword = ref(false);
 const siderOpen = ref(false);
+const bgUrl = ref(''); // 背景URL变量
 
 const pageTitle = computed(() => {
   switch (page.value) {
@@ -117,6 +129,7 @@ const pageTitle = computed(() => {
     case 'ad': return '广告管理';
     case 'friend': return '友链管理';
     case 'user': return '用户管理';
+    case 'background': return '背景设置';
     default: return '';
   }
 });
@@ -125,10 +138,40 @@ onMounted(() => {
   const token = localStorage.getItem('token');
   isLoggedIn.value = !!token;
   if (isLoggedIn.value) {
-    // 拉取用户信息
     fetchLastLoginInfo();
+    // 初始加载当前背景（如果接口支持）
+    fetchCurrentSettings();
   }
 });
+
+async function fetchCurrentSettings() {
+  try {
+    const res = await fetch('/api/config');
+    if (res.ok) {
+      const data = await res.json();
+      bgUrl.value = data.backgroundImage || '';
+    }
+  } catch (e) { console.error('获取配置失败'); }
+}
+
+async function saveBackground() {
+  if (!bgUrl.value) return alert('请输入背景地址');
+  try {
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ backgroundImage: bgUrl.value })
+    });
+    if (res.ok) alert('背景设置成功！刷新首页查看效果');
+    else alert('保存失败，请检查后端接口支持');
+  } catch (e) {
+    alert('请求失败，请确保后端 API 已实现配置保存功能');
+  }
+}
+
 async function fetchLastLoginInfo() {
   try {
     const res = await fetch('/api/users/me', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
@@ -186,6 +229,7 @@ function closeSider() {
 </script>
 
 <style scoped>
+/* 原有样式保持不变 */
 .login-container {
   display: flex;
   justify-content: center;
@@ -379,7 +423,7 @@ function closeSider() {
 .header-title {
   flex: 1;
   text-align: center;
-  margin-left: 180px;
+  margin-left: 0px; /* 修改这里让标题居中 */
   font-size: 1.5rem;
   font-weight: 500;
   letter-spacing: 2px;
@@ -615,4 +659,4 @@ function closeSider() {
 .menu-toggle {
   display: none;
 }
-</style> 
+</style>
