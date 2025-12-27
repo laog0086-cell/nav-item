@@ -194,7 +194,8 @@ bash <(curl -Ls https://github.com/eooce/nav-item/releases/download/ct8-and-serv
 
 ---
 
-⭐ 如果这个项目对你有帮助，请给它一个星标！ 
+⭐ 如果这个项目对你有帮助，请给它一个星标！！！ 
+
 
 
 
