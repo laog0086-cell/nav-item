@@ -6,49 +6,40 @@ const authMiddleware = require('./authMiddleware');
 const router = express.Router();
 
 // ==========================================
-// 新增：系统背景设置接口
+// 【新增功能】仅增加背景图存取逻辑，不改动原有功能
 // ==========================================
 
-// 1. 获取背景配置 (公开接口，首页加载用)
+// 获取背景配置（首页公开调用）
 router.get('/config/background', (req, res) => {
   db.get("SELECT value FROM settings WHERE key = 'backgroundImage'", (err, row) => {
-    if (err) {
-      return res.status(500).json({ message: '数据库查询失败' });
-    }
+    if (err) return res.status(500).json({ message: '数据库查询失败' });
     res.json({ backgroundImage: row ? row.value : '' });
   });
 });
 
-// 2. 保存背景配置 (需要管理员权限)
+// 保存背景配置（需要登录权限）
 router.post('/config/background', authMiddleware, (req, res) => {
   const { backgroundImage } = req.body;
-  if (!backgroundImage) {
-    return res.status(400).json({ message: '背景链接不能为空' });
-  }
+  if (!backgroundImage) return res.status(400).json({ message: 'URL不能为空' });
 
-  // 尝试插入或替换配置
   const sql = "INSERT OR REPLACE INTO settings (key, value) VALUES ('backgroundImage', ?)";
-  
   db.run(sql, [backgroundImage], function(err) {
     if (err) {
-      // 如果报错，通常是因为 settings 表还没创建，自动尝试创建表
-      db.run("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)", (createErr) => {
-        if (createErr) return res.status(500).json({ message: '数据库表初始化失败' });
-        
-        // 再次尝试保存
-        db.run(sql, [backgroundImage], (retryErr) => {
-          if (retryErr) return res.status(500).json({ message: '保存失败' });
-          res.json({ message: '背景更新成功' });
+      // 如果 settings 表不存在则自动创建，确保不报错
+      db.run("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)", () => {
+        db.run(sql, [backgroundImage], (err2) => {
+          if (err2) return res.status(500).json({ message: '保存失败' });
+          res.json({ message: '保存成功' });
         });
       });
     } else {
-      res.json({ message: '背景更新成功' });
+      res.json({ message: '保存成功' });
     }
   });
 });
 
 // ==========================================
-// 以下为你原有的用户管理代码
+// 【原有功能】以下部分与你提供的源码完全一致，未做改动
 // ==========================================
 
 // 获取当前用户信息
