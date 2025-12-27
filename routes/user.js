@@ -6,10 +6,10 @@ const authMiddleware = require('./authMiddleware');
 const router = express.Router();
 
 // ==========================================
-// 【新增功能】仅增加背景图存取逻辑，不改动原有功能
+// 【新增：背景图保存与读取】 仅增加，不影响原有逻辑
 // ==========================================
 
-// 获取背景配置（首页公开调用）
+// 获取背景 (给首页用)
 router.get('/config/background', (req, res) => {
   db.get("SELECT value FROM settings WHERE key = 'backgroundImage'", (err, row) => {
     if (err) return res.status(500).json({ message: '数据库查询失败' });
@@ -17,29 +17,29 @@ router.get('/config/background', (req, res) => {
   });
 });
 
-// 保存背景配置（需要登录权限）
+// 保存背景 (给后台用)
 router.post('/config/background', authMiddleware, (req, res) => {
   const { backgroundImage } = req.body;
   if (!backgroundImage) return res.status(400).json({ message: 'URL不能为空' });
 
+  // 这里的逻辑会自动判断是否有 settings 表，没有就建表，有就存数据
   const sql = "INSERT OR REPLACE INTO settings (key, value) VALUES ('backgroundImage', ?)";
   db.run(sql, [backgroundImage], function(err) {
     if (err) {
-      // 如果 settings 表不存在则自动创建，确保不报错
       db.run("CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)", () => {
         db.run(sql, [backgroundImage], (err2) => {
           if (err2) return res.status(500).json({ message: '保存失败' });
-          res.json({ message: '保存成功' });
+          res.json({ message: '背景更新成功' });
         });
       });
     } else {
-      res.json({ message: '保存成功' });
+      res.json({ message: '背景更新成功' });
     }
   });
 });
 
 // ==========================================
-// 【原有功能】以下部分与你提供的源码完全一致，未做改动
+// 【原有代码】以下内容完全保留你原本的业务逻辑
 // ==========================================
 
 // 获取当前用户信息
