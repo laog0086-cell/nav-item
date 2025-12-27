@@ -3,12 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=0">
-    <title>我的导航-个人专属导航页-Navitem</title>
+    <title>LaoG的导航网</title>
     <link rel="icon" type="image/png" href="https://img.icons8.com/lollipop/100/navigation.png" />
     <meta name="description" content="个人导航页面，提供常用网站链接和工具集合，让您快速访问常用资源" />
     <meta name="keywords" content="导航,书签,常用网站,工具集合,个人导航,快速访问" />
+    <style>
+      /* 后台登录链接的样式 - 绝对定位在搜索框右侧 */
+      .admin-entrance {
+        position: fixed;
+        /* 根据你的截图微调，25% 左右通常是搜索栏的高度 */
+        top: 25px; 
+        right: 25px;
+        z-index: 9999;
+        color: rgba(255, 255, 255, 0.3); /* 初始半透明，不显眼 */
+        text-decoration: none;
+        font-size: 13px;
+        transition: all 0.3s;
+        padding: 5px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+      }
+      .admin-entrance:hover {
+        color: rgba(255, 255, 255, 1);
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+    </style>
   </head>
   <body style="margin:0;padding:0;background:#222;">
+    <a href="/admin" class="admin-entrance">管理</a>
+
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
   </body>
